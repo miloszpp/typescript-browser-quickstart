@@ -2,11 +2,22 @@
 <html>
 
 <head>
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <link href="barecss/css/bare.min.css" rel="stylesheet">
 </head>
 
 <body>
-    <h1>Hello!</h1>
+  <section>
+    <h2>Sentiment Analysis</h2>
+
+    <label>Text to analyze</label>
+    <textarea id="input-text" placeholder="Enter text to analyze"></textarea>
+
+    <button id="button-analyze">Analyze!</button>
+    <button id="button-cancel">Cancel</button>
+  </section>
+  <section id="section-results">
+  </section>
 </body>
 
 </html>
