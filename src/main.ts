@@ -1,7 +1,7 @@
 import './../barecss/css/bare.min.css';
 
-import { Observable, merge, Subject, fromEvent, empty } from 'rxjs';
-import { publish, skipWhile, takeWhile, take, tap, map, switchMap, repeatWhen, delay, takeUntil, share, withLatestFrom } from 'rxjs/operators';
+import { Observable, merge, Subject, fromEvent, empty, of, throwError, timer } from 'rxjs';
+import { publish, skipWhile, takeWhile, take, tap, map, switchMap, repeatWhen, delay, takeUntil, share, withLatestFrom, retry, retryWhen, filter, throwIfEmpty, delayWhen } from 'rxjs/operators';
 import { ajax } from 'rxjs/ajax';
 
 interface AnalyzeTask {
@@ -75,3 +75,37 @@ cancelSubject.pipe(
 fromEvent(cancelButtonEl, 'click').subscribe(
   () => cancelSubject.next()
 );
+
+//--------
+
+interface PriceResult {
+  price: number;
+  timestamp: number;
+}
+
+const getPriceButtonEl = document.getElementById('button-get-price') as HTMLButtonElement;
+const priceInputEl = document.getElementById('input-stock-symbol') as HTMLInputElement;
+const priceSectionEl = document.getElementById('section-price') as HTMLDivElement;
+
+fromEvent(getPriceButtonEl, 'click').pipe(
+  map(() => priceInputEl.value),
+  switchMap(symbol => 
+    ajax.getJSON<PriceResult>(`${url}/stocks/${symbol}`).pipe(
+      retryWhen(error$ => error$.pipe(
+        switchMap(error => 
+          error.status === 503
+          ? of(error)
+          : throwError(error)),
+        // Fixed interval
+        // delay(1000),
+        // Exponential backoff
+        delayWhen((error, i) => timer(Math.pow(2, i) * 100)),
+      ))
+    )),
+  tap(null, error => priceSectionEl.innerHTML = `Error: ${error}`),
+  retry(),
+).subscribe(
+  result => priceSectionEl.innerHTML = `Price: ${result.price}`,
+);
+
+//--------
