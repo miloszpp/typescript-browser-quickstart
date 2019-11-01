@@ -72,3 +72,5 @@ console.log(new Date(userRepository.getUser(1).meta.modfiedBy).getFullYear());
 userRepository.forEachUser((user: SuperUser) =>
   console.log(user.permissions.join(", "))
 );
+
+export default {};
